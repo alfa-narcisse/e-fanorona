@@ -1,10 +1,13 @@
 """
 - load all data as a npy file and stock them in the Directory datasets
 """
-
 import numpy as np
-X = np.random.randint(-2,2,(9,3))
-Y = np.random.randn(16,3)
+from sklearn.metrics import accuracy_score
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+X1 = np.random.randint(-2,2,(9,3))
+Y1 = np.random.randn(16,3)
 def initialisations(dimensions:list):
     c= len(dimensions)
     parameters = dict()
@@ -13,7 +16,7 @@ def initialisations(dimensions:list):
         parameters["b"+str(i)] = np.random.randn(dimensions[i],1)
     return parameters
 
-parameters = initialisations([9,9,32,64,16])
+#parameters = initialisations([9,9,32,64,16])
 
 def ReLu(Z):
     l,c = Z.shape
@@ -31,6 +34,9 @@ def soft_max(Z):
         summ = np.sum(np.exp(Z[:,j] - max_col_j ))
         A[:,j] = np.exp(Z[:,j]-max_col_j)/summ
     return A
+def Cross_entropy(A,B):
+    m = A.shape[1]
+    return -np.sum(B*np.log(A))/m
 
 
 def forward_propagations(X, parameters):
@@ -45,7 +51,7 @@ def forward_propagations(X, parameters):
     activations["A"+str(C)] = soft_max(Z)
     return activations, post_activations
 
-activations, post_activations = forward_propagations(X, parameters)
+#activations, post_activations = forward_propagations(X, parameters)
 #print(act["A4"])
 
 # --------------- back propagation ---------------------
@@ -78,3 +84,49 @@ def update(gradients,parameters, lr):
         parameters["W"+str(i)] -= lr*gradients["dW"+str(i)]
         parameters["b"+str(i)] -= lr*gradients["db"+str(i)]
     return parameters
+
+def predict(X, parameters):
+    activations,_ = forward_propagations(X,parameters)
+    C = len(parameters)//2
+    Af = activations["A"+str(C)]
+    return (Af == Af.max(axis=0, keepdims = True)).astype(int)
+
+def neural_network(X,Y, hidden_layer = (9,32,64), lr = 0.1, n_iter=1000):
+    np.random.seed()
+    dimensions = list(hidden_layer)
+    dimensions.insert(0, X.shape[0])
+    m = X.shape[1]
+    dimensions.append(Y.shape[0])
+    parameters = initialisations(dimensions)
+    train_loss = []
+    train_acc = []
+    for i in  tqdm(range(n_iter)):
+        activations, post_activations = forward_propagations(X,parameters)
+        gradients = back_propagation(parameters, post_activations, activations, Y)
+        parameters = update(gradients,parameters, lr)
+
+        if i%10 == 0:
+            C = len(parameters)//2
+            train_loss.append(Cross_entropy(activations["A"+str(C)], Y))
+            Y_pred = predict(X,parameters)
+            current_acc = accuracy_score( Y.flatten(), Y_pred.flatten())
+            train_acc.append(current_acc)
+
+    fig, ax = plt.subplots(nrows=1,ncols=2, figsize = (18,4))
+    ax[0].plot(train_loss, label="Train_loss")
+    ax[0].legend()
+
+    ax[1].plot(train_acc, label="Train_Accuracy")
+    ax[1].legend()
+    plt.show()
+    return parameters
+
+def save_parameters(parameters):
+    np.savez("fanorona_parameters.npz", **parameters)
+
+# loading data
+dataset = np.load('datasets/datasets.npz')
+X = dataset["X"]
+Y = dataset["Y"]
+parameters = neural_network(X,Y)
+save_parameters(parameters)
