@@ -128,7 +128,7 @@ def neural_network(X,Y, hidden_layer = (9,32,64), lr = 0.1, n_iter=1000):
     return parameters, train_acc[-1], train_loss[-1]
 
 def save_parameters(parameters):
-    np.savez("fanorona_parameters.npz", **parameters)
+    np.savez("fanorona_parameters_v1.npz", **parameters)
 
 # loading data
 dataset = np.load('datasets/datasets.npz')
