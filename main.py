@@ -34,9 +34,13 @@ def soft_max(Z):
         summ = np.sum(np.exp(Z[:,j] - max_col_j ))
         A[:,j] = np.exp(Z[:,j]-max_col_j)/summ
     return A
-def Cross_entropy(A,B):
+def Cross_entropy(A, B, epsilon=1e-12):
+    """
+    Cross-entropy loss pour la classification multi-classe
+    """
+    A = np.clip(A, epsilon, 1.0 - epsilon)
     m = A.shape[1]
-    return -np.sum(B*np.log(A))/m
+    return -np.sum(B * np.log(A)) / m
 
 
 def forward_propagations(X, parameters):
@@ -97,7 +101,9 @@ def neural_network(X,Y, hidden_layer = (9,32,64), lr = 0.1, n_iter=1000):
     dimensions.insert(0, X.shape[0])
     m = X.shape[1]
     dimensions.append(Y.shape[0])
-    parameters = initialisations(dimensions)
+    #parameters = initialisations(dimensions)
+    param = np.load('fanorona_parameters.npz')
+    parameters = {k:v for k,v in param.items()}
     train_loss = []
     train_acc = []
     for i in  tqdm(range(n_iter)):
@@ -119,7 +125,7 @@ def neural_network(X,Y, hidden_layer = (9,32,64), lr = 0.1, n_iter=1000):
     ax[1].plot(train_acc, label="Train_Accuracy")
     ax[1].legend()
     plt.show()
-    return parameters
+    return parameters, train_acc[-1], train_loss[-1]
 
 def save_parameters(parameters):
     np.savez("fanorona_parameters.npz", **parameters)
@@ -128,5 +134,8 @@ def save_parameters(parameters):
 dataset = np.load('datasets/datasets.npz')
 X = dataset["X"]
 Y = dataset["Y"]
-parameters = neural_network(X,Y)
+parameters,t_a, t_l = neural_network(X,Y)
 save_parameters(parameters)
+res = {"res": np.array([t_a, t_l])}
+np.savez('res_train.npz', **res)
+print(t_a, t_l)
