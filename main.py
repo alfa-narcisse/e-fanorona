@@ -5,6 +5,9 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+
+
 def initialisations(dimensions:list):
     c= len(dimensions)
     parameters = dict()
