@@ -54,7 +54,8 @@ plateau_Game = [
     -1,-1,-1
 ]
 
-MINIMAX_DEPTH = 1   # ajustable (profondeur de recherche)
+MINIMAX_DEPTH = 7
+# ajustable (profondeur de recherche)
 
 
 def chek_wins(plateau:list, val_player):
@@ -88,7 +89,7 @@ def evaluate(plateau):
             score += 10
         elif sum([v == -2 for v in vals]) >= 2:
             score -= 10
-    for player in enumerate(plateau):
+    for player in plateau:
         if player == 2:
             score+= 2
         elif player == -2:
@@ -97,8 +98,7 @@ def evaluate(plateau):
 
 
 # ---------- Minimax alpha-beta ----------
-def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH,
-                     alpha=-math.inf, beta=math.inf):
+def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
 
     val = evaluate(plateau)
     if math.isinf(val) or depth == 0:
@@ -117,24 +117,17 @@ def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH,
                 new_plateau[node] = 0
                 _, score = minimax_alpha_beta(
                     new_plateau, ia_turn= not ia_turn,
-                    depth=depth-1, alpha=alpha,beta=beta
-                    )
+                    depth=depth-1)
                 if ia_turn:
                     if score >= max_eval:
                         val = score
                         max_eval = score
                         best_edge = (edge_index,target_node)
-                    alpha = max(alpha, score)
-                    if beta <= alpha:
-                        return best_edge, val
                 else:
                     if score <= min_eval:
                         val = score
                         min_eval = score
                         best_edge = (edge_index,target_node)
-                    beta = min(beta, score)
-                    if beta <= alpha:
-                        return best_edge, val
     return best_edge, val
 
 def do_the_move(move):
