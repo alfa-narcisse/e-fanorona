@@ -1,5 +1,4 @@
 import pygame, sys, math, copy
-#from main import predict
 import numpy as np
 
 pygame.init()
@@ -39,11 +38,6 @@ LINES = [
 
 # --- Minimax avec alpha-beta ---
 # ---------- Configuration ----------
-Edges = [(0,1),(1,2),(3,4),(4,5),(6,7),(7,8),
-         (0,3),(3,6),(1,4),(4,7),(2,5),(5,8),
-         (0,4),(2,4),(6,4),(8,4)]
-
-
 
 initial_side_IA = [0,1,2]
 initial_side_adv = [6,7,8]
@@ -68,7 +62,7 @@ def chek_wins(plateau:list, val_player):
 # ---------- Utils ----------
 def get_possible_moves(node, plateau):
     moves = []
-    for u,v in Edges:
+    for u,v in EDGES:
         if node == u and plateau[v] == 0:
             moves.append((u,v))
         elif node == v and plateau[u] == 0:
