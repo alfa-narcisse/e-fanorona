@@ -93,36 +93,60 @@ def evaluate(plateau):
 
 # ---------- Minimax alpha-beta ----------
 def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
-
     val = evaluate(plateau)
+    d = depth
     if math.isinf(val) or depth == 0:
-        return None, val
+        return None, val, d
 
     player_vals = (1,2) if ia_turn else (-1,-2)
     best_edge = None
     min_eval = math.inf
     max_eval = -math.inf
+    dico = {}
     for node in range(9):
         if plateau[node] in player_vals:
             move = get_possible_moves(node, plateau)
+            depthRefInfmin = MINIMAX_DEPTH
+            dephtRefMax = 0
             for  edge_index, target_node in move:
                 new_plateau = plateau.copy()
                 new_plateau[target_node] = player_vals[1]
                 new_plateau[node] = 0
-                _, score = minimax_alpha_beta(
+                _, score, d = minimax_alpha_beta(
                     new_plateau, ia_turn= not ia_turn,
                     depth=depth-1)
                 if ia_turn:
                     if score >= max_eval:
                         val = score
                         max_eval = score
-                        best_edge = (edge_index,target_node)
+                        best_edge = (edge_index, target_node)
+                        if score == -math.inf or score==math.inf:
+                            dico[best_edge] = d
                 else:
                     if score <= min_eval:
                         val = score
                         min_eval = score
                         best_edge = (edge_index,target_node)
-    return best_edge, val
+
+    if ia_turn and val== math.inf:
+        #On cherche le best_target dont la profondeur est plus grand(plus proche)/ en cas d'égalité, on prend le premier
+        d_max = 0
+        b_move = tuple()
+        for k,v in dico.items():
+            if dico[k]>d_max:
+                b_move = k
+                d_max = v
+        return  b_move,val,d_max
+    if ia_turn and val == -math.inf:
+        #On cherche le best_target dont la profondeur est plus gpeti(plus loin)/ en cas d'égalité, on prend le premier
+        d_max = MINIMAX_DEPTH + 1
+        b_move = tuple()
+        for k,v in dico.items():
+            if v < d_max:
+                b_move = k
+                d_max = v
+        return  b_move,val,d_max
+    return best_edge, val, d
 
 def do_the_move(move):
     dep,target = move[0], move[1]
@@ -169,13 +193,7 @@ while True:
         pygame.time.wait(400)
         best = None
         while best is None:
-            best,_ = minimax_alpha_beta(plateau_Game)
-            #for i,pos in enumerate(plateau_Game):
-                #if pos in (1,2):
-                    #moves = get_possible_moves(i,plateau_Game)
-                    #if len(moves) !=0:
-                        #best = moves[0]
-                        #break"""
+            best,_,_ = minimax_alpha_beta(plateau_Game)
         do_the_move(best)
         if chek_wins(plateau_Game, 2):
             draw()
