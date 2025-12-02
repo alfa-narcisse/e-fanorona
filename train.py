@@ -42,13 +42,12 @@ LINES = [
 initial_side_IA = [0,1,2]
 initial_side_adv = [6,7,8]
 
-plateau_Game = [
-    1,1,1,
-    0,0,0,
-    -1,-1,-1
-]
+plateau_Game =[1,1,1,
+           0,0,0,
+           -1,-1,-1
+           ]
 
-MINIMAX_DEPTH = 7
+MINIMAX_DEPTH = 8
 # ajustable (profondeur de recherche)
 
 
@@ -102,12 +101,11 @@ def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
     best_edge = None
     min_eval = math.inf
     max_eval = -math.inf
-    dico = {}
+    dico_moins = {}
+    dico_plus = {}
     for node in range(9):
         if plateau[node] in player_vals:
             move = get_possible_moves(node, plateau)
-            depthRefInfmin = MINIMAX_DEPTH
-            dephtRefMax = 0
             for  edge_index, target_node in move:
                 new_plateau = plateau.copy()
                 new_plateau[target_node] = player_vals[1]
@@ -120,19 +118,26 @@ def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
                         val = score
                         max_eval = score
                         best_edge = (edge_index, target_node)
-                        if score == -math.inf or score==math.inf:
-                            dico[best_edge] = d
+                        if score == -math.inf:
+                            if best_edge not in dico_moins.keys():
+                                dico_moins[best_edge] = d
+                            elif d<dico_moins[best_edge]:
+                                dico_moins[best_edge] = d
+                        if score == math.inf:
+                            if best_edge not in dico_plus.keys():
+                                dico_plus[best_edge] = d
+                            elif d>dico_moins[best_edge]:
+                                dico_plus[best_edge] = d
                 else:
                     if score <= min_eval:
                         val = score
                         min_eval = score
                         best_edge = (edge_index,target_node)
-
     if ia_turn and val== math.inf:
         #On cherche le best_target dont la profondeur est plus grand(plus proche)/ en cas d'égalité, on prend le premier
         d_max = 0
         b_move = tuple()
-        for k,v in dico.items():
+        for k,v in dico_plus.items():
             if v>d_max:
                 b_move = k
                 d_max = v
@@ -141,7 +146,7 @@ def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
         #On cherche le best_target dont la profondeur est plus gpeti(plus loin)/ en cas d'égalité, on prend le premier
         d_max = MINIMAX_DEPTH + 1
         b_move = tuple()
-        for k,v in dico.items():
+        for k,v in dico_moins.items():
             if v < d_max:
                 b_move = k
                 d_max = v
@@ -185,7 +190,7 @@ def node_at_pos(mouse_pos):
 
 # ---------------- MAIN LOOP ----------------
 selected = None
-IA_turn = False
+IA_turn = True
 while True:
     draw()
     # Tour IA
