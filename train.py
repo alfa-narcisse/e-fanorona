@@ -133,7 +133,7 @@ def minimax_alpha_beta(plateau, ia_turn=True, depth=MINIMAX_DEPTH):
         d_max = 0
         b_move = tuple()
         for k,v in dico.items():
-            if dico[k]>d_max:
+            if v>d_max:
                 b_move = k
                 d_max = v
         return  b_move,val,d_max
